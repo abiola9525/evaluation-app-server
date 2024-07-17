@@ -1,0 +1,124 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Module - Admin Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Optional: Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        /* Custom styles specific to this page */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            padding-top: 45px;
+            padding-bottom: 50px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .btn-submit {
+            border-radius: 20px;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-submit:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .btn--blue {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn--blue:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_module_list' %}">Modules</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_program_list' %}">Programs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_module_create' %}">Create Module</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_program_create' %}">Create Programs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+        <div style="text-align: right; margin-top: 5px;">
+            <a href="{% url 'admin_module_upload_xlsx' %}" class="btn btn--radius-2 btn--blue">Upload XLSX</a>
+        </div>
+        <h2>Create Module</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="form-group">
+                <label for="{{ form.module_code.id_for_label }}">Module Code:</label>
+                {{ form.module_code }}
+                {{ form.module_code.errors }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.module_name.id_for_label }}">Module Name:</label>
+                {{ form.module_name }}
+                {{ form.module_name.errors }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.module_leader.id_for_label }}">Module Leader:</label>
+                {{ form.module_leader }}
+                {{ form.module_leader.errors }}
+            </div>
+            <button type="submit" class="btn btn-submit">Create Module</button>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS and dependencies (jQuery, Popper.js) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

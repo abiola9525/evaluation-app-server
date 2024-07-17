@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Program List</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Optional: Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        /* Custom styles specific to this page */
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+            background-color: #333;
+        }
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .page-wrapper {
+            background-color: #f2f2f2;
+            padding-top: 45px;
+            padding-bottom: 50px;
+        }
+        .program-list-container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .program-list-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .program-list-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .program-list-container th, .program-list-container td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .program-list-container th {
+            background-color: #f2f2f2;
+        }
+        .program-list-container a {
+            text-decoration: none;
+            color: #007bff;
+        }
+        .program-list-container a:hover {
+            text-decoration: underline;
+        }
+        .btn--radius-2 {
+            border-radius: 20px;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #fff;
+        }
+        .btn--blue {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn--blue:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+        .status-icon-green {
+            background-color: #28a745;
+        }
+        .status-icon-red {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_module_list' %}">Modules</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_program_list' %}">Programs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_module_create' %}">Create Module</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_program_create' %}">Create Programs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="page-wrapper">
+        <div class="wrapper wrapper--w790">
+            <div class="program-list-container">
+                <h2>Program List</h2>
+                <div class="form-group">
+                    <input type="text" id="search-input" class="form-control" placeholder="Search by Program Code or Name">
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped" id="program-table">
+                        <thead>
+                            <tr>
+                                <th>Program Code</th>
+                                <th>Program Name</th>
+                                <th>Program Leader</th>
+                                <th>Completed</th>
+                                <th>Completed By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for program in programs %}
+                            <tr>
+                                <td><a href="{% url 'admin_program_detail' program.id %}">{{ program.program_code }}</a></td>
+                                <td>{{ program.program_name }}</td>
+                                <td>{{ program.program_leader }}</td>
+                                <td>{% if program.program_review.exists %}
+                                    {% if program.program_review.first.completed %}
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                    {% endif %}
+                                {% endif %}
+                                </td>
+                                <td>{% if program.program_review.exists %} {{ program.program_review.first.completed_by }} {% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies (jQuery, Popper.js) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Custom JS for search functionality -->
+    <script>
+        document.getElementById('search-input').addEventListener('input', function() {
+            const query = this.value;
+            fetch(`/api/admin/search_programs/?query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#program-table tbody');
+                    tableBody.innerHTML = '';
+                    data.results.forEach(program => {
+                        const row = `
+                            <tr>
+                                <td><a href="/admin/programs/${program.id}">${program.program_code}</a></td>
+                                <td>${program.program_name}</td>
+                                <td>${program.program_leader}</td>
+                                <td>${program.completed ? '<i class="fas fa-check-circle text-success"></i>' : '<i class="fas fa-times-circle text-danger"></i>'}</td>
+                                <td>${program.completed_by}</td>
+                            </tr>
+                        `;
+                        tableBody.insertAdjacentHTML('beforeend', row);
+                    });
+                });
+        });
+    </script>
+</body>
+</html>
