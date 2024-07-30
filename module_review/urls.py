@@ -31,8 +31,12 @@ urlpatterns = [
     path('admin/programs/', vs.AdminProgramList.as_view(), name='admin_program_list'),
     path('admin/program/<int:program_id>/', vs.AdminProgramDetail.as_view(), name='admin_program_detail'),
     path('admin/search_modules/', vs.search_modules, name='search_modules'),
+    path('admin/filter_modules/', vs.filter_modules, name='filter_modules'),
     path('admin/search_programs/', vs.search_programs, name='search_programs'),
     path('admin/program/create/', vs.program_create, name='admin_program_create'),
     path('admin/module/create/', vs.module_create, name='admin_module_create'),
+    path('admin/academic-year/', vs.AdminAcademicYearList.as_view(), name='admin_academicyear_list'),
+    path('admin/academic-year/add/', vs.add_academic_year, name='add_academic_year'),
+    path('admin/academic-year/toggle-eval-accepting/<int:pk>/', vs.toggle_eval_accepting, name='toggle_eval_accepting'),
 
 ]

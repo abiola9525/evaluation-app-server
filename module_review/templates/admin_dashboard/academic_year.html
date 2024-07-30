@@ -1,9 +1,11 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Program List</title>
+    <title>Admin Dashboard - Academic Year List</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <!-- Optional: Font Awesome for icons -->
@@ -24,7 +26,7 @@
             padding-top: 45px;
             padding-bottom: 50px;
         }
-        .program-list-container {
+        .module-list-container {
             max-width: 800px;
             margin: auto;
             padding: 20px;
@@ -33,27 +35,27 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        .program-list-container h2 {
+        .module-list-container h2 {
             text-align: center;
             margin-bottom: 20px;
         }
-        .program-list-container table {
+        .module-list-container table {
             width: 100%;
             border-collapse: collapse;
         }
-        .program-list-container th, .program-list-container td {
+        .module-list-container th, .module-list-container td {
             padding: 10px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
-        .program-list-container th {
+        .module-list-container th {
             background-color: #f2f2f2;
         }
-        .program-list-container a {
+        .module-list-container a {
             text-decoration: none;
             color: #007bff;
         }
-        .program-list-container a:hover {
+        .module-list-container a:hover {
             text-decoration: underline;
         }
         .btn--radius-2 {
@@ -67,8 +69,24 @@
             border-color: #007bff;
         }
         .btn--blue:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
+            background-color: #008000;
+            border-color: #008000;
+        }
+        .btn--green {
+            background-color: #008000;
+            border-color: #008000;
+        }
+        .btn--green:hover {
+            background-color: #00FF00;
+            border-color: #00FF00;
+        }
+        .btn--red {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .btn--red:hover {
+            background-color: #c82333;
+            border-color: #c82333;
         }
         .status-icon {
             width: 20px;
@@ -122,37 +140,38 @@
     <!-- Page Content -->
     <div class="page-wrapper">
         <div class="wrapper wrapper--w790">
-            <div class="program-list-container">
-                <h2>Program List</h2>
-                <div class="form-group">
-                    <input type="text" id="search-input" class="form-control" placeholder="Search by Program Code or Name">
+            <div class="module-list-container">
+                <h2>Academic Year List</h2>
+                <div style="text-align: right; margin-bottom: 20px;">
+                    <a href="{% url 'add_academic_year' %}" class="btn btn--radius-2 btn--blue" style="color: white;">Add Academic Year</a>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-striped" id="program-table">
+                    <table class="table table-striped" id="module-table">
                         <thead>
                             <tr>
-                                <th>Program Code</th>
-                                <th>Program Name</th>
-                                <th>Program Leader</th>
-                                <th>Completed</th>
-                                <th>Completed By</th>
+                                <th>Academic Year</th>
+                                <th>Receiving Evaluation</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for program in programs %}
+                            {% for academic_year in academic_years %}
                             <tr>
-                                <td><a href="{% url 'admin_program_detail' program.id %}">{{ program.program_code }}</a></td>
-                                <td>{{ program.program_name }}</td>
-                                <td>{{ program.program_leader }}</td>
-                                <td>{% if program.program_review.exists %}
-                                    {% if program.program_review.first.completed %}
-                                        <i class="fas fa-check-circle text-success"></i>
+                                <td>{{ academic_year.academic_year }}</td>
+                                <td>
+                                    {% if academic_year.eval_accepting %}
+                                        <span class="status-icon status-icon-green"></span> Yes
                                     {% else %}
-                                        <i class="fas fa-times-circle text-danger"></i>
+                                        <span class="status-icon status-icon-red"></span> No
                                     {% endif %}
-                                {% endif %}
                                 </td>
-                                <td>{% if program.program_review.exists %} {{ program.program_review.first.completed_by }} {% endif %}</td>
+                                <td>
+                                    {% if academic_year.eval_accepting %}
+                                        <a href="{% url 'toggle_eval_accepting' academic_year.id %}" class="btn btn--red btn--radius-2" style="color: white;">Set to No</a>
+                                    {% else %}
+                                        <a href="{% url 'toggle_eval_accepting' academic_year.id %}" class="btn btn--green btn--radius-2" style="color: white;">Set to Yes</a>
+                                    {% endif %}
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -167,29 +186,5 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- Custom JS for search functionality -->
-    <script>
-        document.getElementById('search-input').addEventListener('input', function() {
-            const query = this.value;
-            fetch(`/api/admin/search_programs/?query=${query}`)
-                .then(response => response.json())
-                .then(data => {
-                    const tableBody = document.querySelector('#program-table tbody');
-                    tableBody.innerHTML = '';
-                    data.results.forEach(program => {
-                        const row = `
-                            <tr>
-                                <td><a href="/api/admin/program/${program.id}">${program.program_code}</a></td>
-                                <td>${program.program_name}</td>
-                                <td>${program.program_leader}</td>
-                                <td>${program.completed ? '<i class="fas fa-check-circle text-success"></i>' : '<i class="fas fa-times-circle text-danger"></i>'}</td>
-                                <td>${program.completed_by}</td>
-                            </tr>
-                        `;
-                        tableBody.insertAdjacentHTML('beforeend', row);
-                    });
-                });
-        });
-    </script>
 </body>
 </html>

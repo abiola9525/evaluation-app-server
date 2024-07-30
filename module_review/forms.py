@@ -1,6 +1,20 @@
 from django import forms
-from .models import Program, Module
+from .models import Program, Module, AcademicYear
 
+class AcademicYearForm(forms.ModelForm):
+    academic_year = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    eval_accepting = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
+    class Meta:
+        model = AcademicYear
+        fields = ['academic_year', 'eval_accepting']
+        
+        
 class ModuleForm(forms.ModelForm):
     module_code = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-control'})

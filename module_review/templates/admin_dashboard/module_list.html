@@ -112,6 +112,9 @@
                     <a class="nav-link" href="{% url 'admin_program_create' %}">Create Programs</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_academicyear_list' %}">Academic Year</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                 </li>
             </ul>
@@ -125,6 +128,11 @@
                 <h2>Module List</h2>
                 <div class="form-group">
                     <input type="text" id="search-input" class="form-control" placeholder="Search by Module Code or Name">
+                </div>
+                <div class="form-group">
+                    <button id="filter-all" class="btn btn--blue btn--radius-2">All</button>
+                    <button id="filter-completed" class="btn btn--blue btn--radius-2">Completed</button>
+                    <button id="filter-not-completed" class="btn btn--blue btn--radius-2">Not Completed</button>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-striped" id="module-table">
@@ -166,7 +174,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- Custom JS for search functionality -->
+    <!-- Custom JS for search and filter functionality -->
     <script>
         document.getElementById('search-input').addEventListener('input', function() {
             const query = this.value;
@@ -178,7 +186,7 @@
                     data.results.forEach(module => {
                         const row = `
                             <tr>
-                                <td><a href="/admin/modules/${module.id}">${module.module_code}</a></td>
+                                <td><a href="/api/admin/module/${module.id}">${module.module_code}</a></td>
                                 <td>${module.module_name}</td>
                                 <td>${module.module_leader}</td>
                                 <td>${module.completed ? '<i class="fas fa-check-circle text-success"></i>' : '<i class="fas fa-times-circle text-danger"></i>'}</td>
@@ -189,6 +197,39 @@
                     });
                 });
         });
+
+        document.getElementById('filter-all').addEventListener('click', function() {
+            fetchModules('all');
+        });
+
+        document.getElementById('filter-completed').addEventListener('click', function() {
+            fetchModules('completed');
+        });
+
+        document.getElementById('filter-not-completed').addEventListener('click', function() {
+            fetchModules('not_completed');
+        });
+
+        function fetchModules(status) {
+            fetch(`/api/admin/filter_modules/?status=${status}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#module-table tbody');
+                    tableBody.innerHTML = '';
+                    data.results.forEach(module => {
+                        const row = `
+                            <tr>
+                                <td><a href="/api/admin/module/${module.id}">${module.module_code}</a></td>
+                                <td>${module.module_name}</td>
+                                <td>${module.module_leader}</td>
+                                <td>${module.completed ? '<i class="fas fa-check-circle text-success"></i>' : '<i class="fas fa-times-circle text-danger"></i>'}</td>
+                                <td>${module.completed_by}</td>
+                            </tr>
+                        `;
+                        tableBody.insertAdjacentHTML('beforeend', row);
+                    });
+                });
+        }
     </script>
 </body>
 </html>

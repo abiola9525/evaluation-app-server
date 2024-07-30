@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Module - Admin Dashboard</title>
+    <title>Add Academic Year - Admin Dashboard</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <!-- Optional: Font Awesome for icons -->
@@ -93,29 +93,21 @@
 
     <!-- Page Content -->
     <div class="container">
-        <div style="text-align: right; margin-top: 5px;">
-            <a href="{% url 'admin_module_upload_xlsx' %}" class="btn btn--radius-2 btn--blue">Upload XLSX</a>
-        </div>
-        <h2>Create Module</h2>
+        <h2>Add Academic Year</h2>
         <form method="post">
             {% csrf_token %}
             {{ form.non_field_errors }}
             <div class="form-group">
-                <label for="{{ form.module_code.id_for_label }}">Module Code:</label>
-                {{ form.module_code }}
-                {{ form.module_code.errors }}
+                <label for="{{ form.academic_year.id_for_label }}">Academic Year:</label>
+                {{ form.academic_year }}
+                {{ form.academic_year.errors }}
             </div>
-            <div class="form-group">
-                <label for="{{ form.module_name.id_for_label }}">Module Name:</label>
-                {{ form.module_name }}
-                {{ form.module_name.errors }}
+            <div class="form-group form-check">
+                {{ form.eval_accepting }}
+                <label for="{{ form.eval_accepting.id_for_label }}" class="form-check-label">Evaluation Accepting</label>
+                {{ form.eval_accepting.errors }}
             </div>
-            <div class="form-group">
-                <label for="{{ form.module_leader.id_for_label }}">Module Leader:</label>
-                {{ form.module_leader }}
-                {{ form.module_leader.errors }}
-            </div>
-            <button type="submit" class="btn btn-submit">Create Module</button>
+            <button type="submit" class="btn btn-submit">Add Academic Year</button>
         </form>
     </div>
 

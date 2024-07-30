@@ -1,12 +1,13 @@
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 from django.shortcuts import render, get_object_or_404
-from .models import Module, Program
+from .models import Module, Program, AcademicYear
 from django.views import View
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from django.contrib import messages
 from django.db.models import Q
-from .forms import ProgramForm, ModuleForm
+from .forms import ProgramForm, ModuleForm, AcademicYearForm
 from django.views.decorators.http import require_GET
 
 
@@ -86,6 +87,32 @@ def search_modules(request):
 
     return JsonResponse({'results': results})
 
+def filter_modules(request):
+    status = request.GET.get('status', 'all')
+    if status == 'completed':
+        modules = Module.objects.filter(module_review__completed=True)
+    elif status == 'not_completed':
+        modules = Module.objects.filter(
+            Q(module_review__completed=False) | 
+            Q(module_review__isnull=True)
+        )
+    else:
+        modules = Module.objects.all()
+    
+    results = [
+        {
+            'id': module.id,
+            'module_code': module.module_code,
+            'module_name': module.module_name,
+            'module_leader': module.module_leader,
+            'completed': module.module_review.exists() and module.module_review.first().completed,
+            'completed_by': module.module_review.first().completed_by if module.module_review.exists() else ''
+        }
+        for module in modules
+    ]
+    return JsonResponse({'results': results})
+
+
 @require_GET
 def search_programs(request):
     query = request.GET.get('query', '')
@@ -133,3 +160,30 @@ def module_create(request):
     else:
         form = ModuleForm()
     return render(request, 'admin_dashboard/module_create.html', {'form': form})
+
+
+def add_academic_year(request):
+    if request.method == 'POST':
+        form = AcademicYearForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Academic Year added successfully!')
+            return redirect('admin_academicyear_list')  # Replace with your desired redirect URL
+    else:
+        form = AcademicYearForm()
+    
+    return render(request, 'admin_dashboard/add_academic_year.html', {'form': form})
+
+@method_decorator(user_passes_test(lambda u: u.is_staff), name='dispatch')
+class AdminAcademicYearList(View):
+    template_name = 'admin_dashboard/academic_year.html'
+
+    def get(self, request, *args, **kwargs):
+        academic_years = AcademicYear.objects.all()
+        return render(request, self.template_name, {'academic_years': academic_years})
+    
+def toggle_eval_accepting(request, pk):
+    academic_year = get_object_or_404(AcademicYear, pk=pk)
+    academic_year.eval_accepting = not academic_year.eval_accepting
+    academic_year.save()
+    return redirect('admin_academicyear_list')
