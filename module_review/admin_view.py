@@ -6,16 +6,52 @@ from django.views import View
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.forms import AuthenticationForm
 from django.db.models import Q
 from .forms import ProgramForm, ModuleForm, AcademicYearForm
 from django.views.decorators.http import require_GET
+from django.http import HttpResponseForbidden
+from django.contrib.auth.decorators import login_required
 
 
 
-@method_decorator(user_passes_test(lambda u: u.is_staff), name='dispatch')
+
+
 def admin_home(request):
     return render(request, 'admin_dashboard/admin_home.html')
+
+#============================LOGIN=========================================
+def custom_login(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('admin-home')  # Redirect to your desired page after login
+        else:
+            messages.error(request, 'Invalid username or password.')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'registration/login.html', {'form': form})
+
+
+
 #=============================================================================
+
+def add_module(request):
+    if not request.user.is_staff:
+        return HttpResponseForbidden("You do not have permission to view this page.")
+    return render(request, 'admin_dashboard/add_module.html')
+
+def add_program(request):
+    if not request.user.is_staff:
+        return HttpResponseForbidden("You do not have permission to view this page.")
+    return render(request, 'admin_dashboard/add_program.html')
+
 @method_decorator(user_passes_test(lambda u: u.is_staff), name='dispatch')
 class AdminModuleList(View):
     template_name = 'admin_dashboard/module_list.html'
@@ -137,6 +173,32 @@ def search_programs(request):
         results.append(program_data)
 
     return JsonResponse({'results': results})
+
+def filter_programs(request):
+    status = request.GET.get('status', 'all')
+    if status == 'completed':
+        programs = Program.objects.filter(program_review__completed=True)
+    elif status == 'not_completed':
+        programs = Program.objects.filter(
+            Q(program_review__completed=False) | 
+            Q(program_review__isnull=True)
+        )
+    else:
+        programs = Program.objects.all()
+    
+    results = [
+        {
+            'id': program.id,
+            'program_code': program.program_code,
+            'program_name': program.program_name,
+            'program_leader': program.program_leader,
+            'completed': program.program_review.exists() and program.program_review.first().completed,
+            'completed_by': program.program_review.first().completed_by if program.program_review.exists() else ''
+        }
+        for program in programs
+    ]
+    return JsonResponse({'results': results})
+
 #===========================Form-------===================================
 
 @user_passes_test(lambda u: u.is_staff)

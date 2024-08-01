@@ -14,6 +14,9 @@
         /* Custom styles specific to this page */
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
         }
         .navbar {
             background-color: #333;
@@ -22,22 +25,22 @@
             font-weight: bold;
         }
         .page-wrapper {
-            background-color: #f2f2f2;
-            padding-top: 45px;
+            padding-top: 50px;
             padding-bottom: 50px;
         }
         .container {
-            max-width: 1200px;
+            max-width: 900px;
             margin: auto;
         }
         .section {
             margin-bottom: 30px;
         }
         .section-title {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             color: #007bff;
+            text-align: center;
         }
         .card {
             background-color: #fff;
@@ -47,9 +50,9 @@
             padding: 20px;
         }
         .card-title {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         .card-body {
             margin-top: 10px;
@@ -68,20 +71,34 @@
             background-color: #0056b3;
             border-color: #0056b3;
         }
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        footer a {
+            color: #fff;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <a class="navbar-brand" href="{% url 'home' %}">Admin Dashboard</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
                 </li>
+                {% if user.is_authenticated %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'admin_module_list' %}">Modules</a>
                 </li>
@@ -89,10 +106,10 @@
                     <a class="nav-link" href="{% url 'admin_program_list' %}">Programs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'admin_module_create' %}">Create Module</a>
+                    <a class="nav-link" href="{% url 'add_module' %}">Create Module</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'admin_program_create' %}">Create Programs</a>
+                    <a class="nav-link" href="{% url 'add_program' %}">Create Programs</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'admin_academicyear_list' %}">Academic Year</a>
@@ -100,6 +117,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                 </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Login</a>
+                </li>
+                {% endif %}
             </ul>
         </div>
     </nav>
@@ -111,8 +133,7 @@
                 <div class="section-title">Welcome to the Admin Dashboard</div>
                 <div class="card">
                     <div class="card-body">
-                        <p>Here you can manage modules, programs, user accounts, and more.</p>
-                        <p>Use the navigation bar above to access different sections.</p>
+                        <p>Here you can manage modules, programs, and academic years. Use the navigation bar above to access different sections.</p>
                     </div>
                 </div>
             </div>
@@ -121,26 +142,25 @@
                 <div class="section-title">Quick Links</div>
                 <div class="card">
                     <div class="card-body">
-                        <ul>
+                        <ul class="list-unstyled">
                             <li><a href="{% url 'admin_module_list' %}">View Modules</a></li>
                             <li><a href="{% url 'admin_program_list' %}">View Programs</a></li>
-                            <li><a href="#">Manage Users</a></li>
+                            <li><a href="{% url 'admin_academicyear_list' %}">Manage Academic Year</a></li>
                             <!-- Add more links as needed -->
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <div class="section">
-                <div class="section-title">Notifications</div>
-                <div class="card">
-                    <div class="card-body">
-                        <p>No new notifications at this time.</p>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Evaluation App. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+        </div>
+    </footer>
 
     <!-- Bootstrap JS and dependencies (jQuery, Popper.js) -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

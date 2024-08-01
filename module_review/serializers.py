@@ -9,7 +9,7 @@ class AcademicYearSerializer(serializers.ModelSerializer):
 
 
 class ModuleReviewSerializer(serializers.ModelSerializer):
-   
+    academic_year = serializers.PrimaryKeyRelatedField(queryset=AcademicYear.objects.all())
     class Meta:
         model = ModuleReview
         fields = [
@@ -19,6 +19,18 @@ class ModuleReviewSerializer(serializers.ModelSerializer):
             'other_comment', 'completed', 'completed_by', 'completion_date'
         ]
         read_only_fields = ['completed', 'completion_date']
+        
+    def validate(self, data):
+        academic_year_id = data.get('academic_year').id
+        try:
+            academic_year = AcademicYear.objects.get(pk=academic_year_id)
+            if not academic_year.eval_accepting:
+                raise serializers.ValidationError(
+                    "Reviews are not currently being accepted for this academic year."
+                )
+        except AcademicYear.DoesNotExist:
+            raise serializers.ValidationError("Invalid academic year.")
+        return data
 
     def create(self, validated_data):
         validated_data['completed'] = True
@@ -43,7 +55,7 @@ class ModuleSerializer(serializers.ModelSerializer):
 # =========================================Program ===================================================
 
 class ProgramReviewSerializer(serializers.ModelSerializer):
-    
+    academic_year = serializers.PrimaryKeyRelatedField(queryset=AcademicYear.objects.all())
     class Meta:
         model = ProgramReview
         fields = [
@@ -53,6 +65,18 @@ class ProgramReviewSerializer(serializers.ModelSerializer):
             'other_comment', 'completed', 'completed_by', 'completion_date'
         ]
         read_only_fields = ['completed', 'completion_date']
+        
+    def validate(self, data):
+        academic_year_id = data.get('academic_year').id
+        try:
+            academic_year = AcademicYear.objects.get(pk=academic_year_id)
+            if not academic_year.eval_accepting:
+                raise serializers.ValidationError(
+                    "Reviews are not currently being accepted for this academic year."
+                )
+        except AcademicYear.DoesNotExist:
+            raise serializers.ValidationError("Invalid academic year.")
+        return data
 
     def create(self, validated_data):
         validated_data['completed'] = True

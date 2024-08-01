@@ -69,19 +69,52 @@
             background-color: #0056b3;
             border-color: #0056b3;
         }
+
+        .export-form {
+            display: inline-block;
+            margin: 1rem 0;
+            text-align: left;
+        }
+        
+        .exportcontainer {
+            max-width: 1000px;
+            margin: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40vh;
+            padding: 20px;
+        }
+
+        .form-group {
+            display: inline-block;
+            margin-right: 1rem;
+            vertical-align: middle;
+        }
+        
+        .form-control {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <a class="navbar-brand" href="{% url 'home' %}">Admin Dashboard</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'admin_module_list' %}">Modules</a>
@@ -90,10 +123,10 @@
                     <a class="nav-link" href="{% url 'admin_program_list' %}">Programs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'admin_module_create' %}">Create Module</a>
+                    <a class="nav-link" href="{% url 'add_module' %}">Create Module</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'admin_program_create' %}">Create Programs</a>
+                    <a class="nav-link" href="{% url 'add_program' %}">Create Programs</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'admin_academicyear_list' %}">Academic Year</a>
@@ -166,9 +199,23 @@
                 </table>
             </div><br><br>
                 {% endfor %}
+                <div class="exportcontainer">
+                    <a href="{% url 'export_module_details' module.id %}" class="btn btn--radius-2 btn--blue">Export as .docx</a>
+                    <form id="exportForm" onsubmit="return updateFormAction()" class="export-form">
+                        <div class="form-group">
+                            <label for="academic_year">Academic Year:</label>
+                            <select id="academic_year" name="academic_year" class="form-control">
+                                <option value="choose">Select Option</option>
+                                {% for review in reviews %}
+                                <option value="{{ review.academic_year.academic_year }}">{{ review.academic_year.academic_year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn--radius-2 btn--blue">Export Selected Year</button>
+                    </form>
+                </div>
                 
                 <div style="margin-top: 3rem; text-align: center;">
-                    <a href="{% url 'export_module_details' module.id %}" class="btn btn--radius-2 btn--blue">Export as .docx</a>
                     <a href="{% url 'admin_module_list' %}" class="btn btn--radius-2 btn--blue">Back to Modules List</a>
                 </div>
             
@@ -179,5 +226,15 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function updateFormAction() {
+            var form = document.getElementById('exportForm');
+            var selectedYear = document.getElementById('academic_year').value;
+            var moduleId = "{{ module.id }}";
+            var url = "{% url 'export_ay_module_details' module_id=0 academic_year='YEAR' %}".replace('0', moduleId).replace('YEAR', selectedYear);
+            window.location.href = url;
+            return false;
+        }
+    </script>
 </body>
 </html>

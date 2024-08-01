@@ -3,6 +3,7 @@ from module_review import views
 from module_review import admin_view as vs
 
 urlpatterns = [
+    path('login/', vs.custom_login, name='login'),
     path('academic-years/', views.academic_year_list, name='academic-year-list'),
     
     path('module/', views.module_list, name='module'),
@@ -24,7 +25,9 @@ urlpatterns = [
     path('admin/module/upload-xlsx/', views.module_upload_xlsx, name='admin_module_upload_xlsx'),
     path('admin/program/upload-xlsx/', views.program_upload_xlsx, name='admin_program_upload_xlsx'),
     path('admin/export_module_details/<int:module_id>/', views.export_module_details, name='export_module_details'),
+    path('admin/export_module_details/<int:module_id>/<str:academic_year>/', views.export_ay_module_details, name='export_ay_module_details'),
     path('admin/export_program_details/<int:program_id>/', views.export_program_details, name='export_program_details'),
+    path('admin/export_program_details/<int:program_id>/<str:academic_year>/', views.export_ay_program_details, name='export_ay_program_details'),
     path('admin/', vs.admin_home, name='home'),
     path('admin/modules/', vs.AdminModuleList.as_view(), name='admin_module_list'),
     path('admin/module/<int:module_id>/', vs.AdminModuleDetail.as_view(), name='admin_module_detail'),
@@ -33,6 +36,9 @@ urlpatterns = [
     path('admin/search_modules/', vs.search_modules, name='search_modules'),
     path('admin/filter_modules/', vs.filter_modules, name='filter_modules'),
     path('admin/search_programs/', vs.search_programs, name='search_programs'),
+    path('admin/filter_programs/', vs.filter_programs, name='filter_programs'),
+    path('admin/module/add-module', vs.add_module, name='add_module'),
+    path('admin/program/add-program', vs.add_program, name='add_program'),
     path('admin/program/create/', vs.program_create, name='admin_program_create'),
     path('admin/module/create/', vs.module_create, name='admin_module_create'),
     path('admin/academic-year/', vs.AdminAcademicYearList.as_view(), name='admin_academicyear_list'),

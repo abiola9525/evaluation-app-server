@@ -106,14 +106,14 @@
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <a class="navbar-brand" href="{% url 'home' %}">Admin Dashboard</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'admin_module_list' %}">Modules</a>
@@ -122,10 +122,10 @@
                     <a class="nav-link" href="{% url 'admin_program_list' %}">Programs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'admin_module_create' %}">Create Module</a>
+                    <a class="nav-link" href="{% url 'add_module' %}">Create Module</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'admin_program_create' %}">Create Programs</a>
+                    <a class="nav-link" href="{% url 'add_program' %}">Create Programs</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'admin_academicyear_list' %}">Academic Year</a>

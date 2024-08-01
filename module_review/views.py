@@ -114,7 +114,8 @@ def module_review_list(request, module_code):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
+    
 @swagger_auto_schema(method='PUT', request_body=ModuleReviewSerializer)
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
@@ -204,10 +205,11 @@ def program_review_list(request, program_code):
         return Response(serializer.data)
     
     elif request.method == 'POST':
-        # Delete any existing reviews for this program
-        ProgramReview.objects.filter(program=program).delete()
         data = request.data.copy()
-        data['program'] = program.id       
+        data['program'] = program.id    
+        existing_review = ProgramReview.objects.filter(program=program, academic_year=data['academic_year']).first()
+        if existing_review:
+            existing_review.delete()
         serializer = ProgramReviewSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
@@ -387,6 +389,93 @@ def export_module_details(request, module_id):
 
     return response
 
+def export_ay_module_details(request, module_id, academic_year):
+    module = get_object_or_404(Module, id=module_id)
+    academic_year_obj = get_object_or_404(AcademicYear, academic_year=academic_year)
+    reviews = ModuleReview.objects.filter(module=module, academic_year=academic_year_obj)
+    
+    document = Document()
+    
+    # Add logo image from URL
+    logo_url = 'https://res.cloudinary.com/ddcynxxlr/image/upload/v1720968735/xypcmbpjm3szs6nwlh8e.jpg'
+    response = requests.get(logo_url)
+    if response.status_code == 200:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp_file:
+            tmp_file.write(response.content)
+            tmp_file_path = tmp_file.name
+
+        header = document.sections[0].header
+        header_paragraph = header.paragraphs[0]
+        run = header_paragraph.add_run()
+        run.add_picture(tmp_file_path, width=Inches(2))  # Adjust size as needed
+    
+    for review in reviews:
+        # Add heading for each review
+        document.add_heading(f'Annual Module Quality Enhancement Report for {review.academic_year.academic_year}\n\n', level=1)
+        
+        table = document.add_table(rows=1, cols=2)
+        table.style = 'Table Grid'
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = '\nDescription\n'
+        hdr_cells[1].text = '\nDetails\n'
+        
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n1. Module details\n'
+        row.cells[1].text = f"\n{module.module_code} {module.module_name}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n2. Academic Year\n'
+        row.cells[1].text = f"\n{review.academic_year.academic_year}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n3. School\n'
+        row.cells[1].text = f"\n{review.school}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n4. Module Leader/Organiser\n'
+        row.cells[1].text = f"\n{module.module_leader}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n5. Student numbers, achievement and progression\n'
+        row.cells[1].text = f"\n{review.student_nap}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n6. Evaluation of the operation of the module\n'
+        row.cells[1].text = f"\n{review.evolution_of_op_module}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n7. Evaluation of approach to teaching, assessment and feedback\n'
+        row.cells[1].text = f"\n{review.evolution_to_teaching}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n8. Inclusive nature of the curriculum\n'
+        row.cells[1].text = f"\n{review.inclusive_nature_of_curriculum}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n9. Effect of past changes\n'
+        row.cells[1].text = f"\n{review.past_changes}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n10. Proposed future changes\n'
+        row.cells[1].text = f"\n{review.future_changes}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\nOther comments\n'
+        row.cells[1].text = f"\n{review.other_comment}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '12. Author and date'
+        row.cells[1].text = f"\n{review.completed_by}\n{review.completion_date}\n"
+        
+        # Add a page break after each review
+        document.add_page_break()
+    
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response['Content-Disposition'] = f'attachment; filename={module.module_code}_{academic_year}_Review.docx'
+    document.save(response)
+
+    return response
+
 
 # ======================Program Export ==================================================
 def export_program_details(request, program_id):
@@ -471,6 +560,94 @@ def export_program_details(request, program_id):
     
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     response['Content-Disposition'] = f'attachment; filename={program.program_code}_Review.docx'
+    document.save(response)
+
+    return response
+
+
+def export_ay_program_details(request, program_id, academic_year):
+    program = get_object_or_404(Program, id=program_id)
+    academic_year_obj = get_object_or_404(AcademicYear, academic_year=academic_year)
+    reviews = ProgramReview.objects.filter(program=program, academic_year=academic_year_obj)
+    
+    document = Document()
+    
+    # Add logo image from URL
+    logo_url = 'https://res.cloudinary.com/ddcynxxlr/image/upload/v1720968735/xypcmbpjm3szs6nwlh8e.jpg'
+    response = requests.get(logo_url)
+    if response.status_code == 200:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp_file:
+            tmp_file.write(response.content)
+            tmp_file_path = tmp_file.name
+
+        header = document.sections[0].header
+        header_paragraph = header.paragraphs[0]
+        run = header_paragraph.add_run()
+        run.add_picture(tmp_file_path, width=Inches(2))  # Adjust size as needed
+    
+    for review in reviews:
+        # Add heading for each review
+        document.add_heading(f'Annual Program Quality Enhancement Report for {review.academic_year.academic_year}\n\n', level=1)
+        
+        table = document.add_table(rows=1, cols=2)
+        table.style = 'Table Grid'
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = '\nDescription\n'
+        hdr_cells[1].text = '\nDetails\n'
+        
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n1. Program details\n'
+        row.cells[1].text = f"\n{program.program_code} {program.program_name}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n2. Academic Year\n'
+        row.cells[1].text = f"\n{review.academic_year.academic_year}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n3. School\n'
+        row.cells[1].text = f"\n{review.school}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n4. Program Leader/Organiser\n'
+        row.cells[1].text = f"\n{program.program_leader}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n5. Student numbers, achievement and progression\n'
+        row.cells[1].text = f"\n{review.student_nap}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n6. Evaluation of the operation of the program\n'
+        row.cells[1].text = f"\n{review.evolution_of_op_program}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n7. Evaluation of approach to teaching, assessment and feedback\n'
+        row.cells[1].text = f"\n{review.evolution_to_teaching}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n8. Inclusive nature of the curriculum\n'
+        row.cells[1].text = f"\n{review.inclusive_nature_of_curriculum}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n9. Effect of past changes\n'
+        row.cells[1].text = f"\n{review.past_changes}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\n10. Proposed future changes\n'
+        row.cells[1].text = f"\n{review.future_changes}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '\nOther comments\n'
+        row.cells[1].text = f"\n{review.other_comment}\n"
+
+        row = add_row_with_spacing(table)
+        row.cells[0].text = '12. Author and date'
+        row.cells[1].text = f"\n{review.completed_by}\n{review.completion_date}\n"
+        
+        # Add a page break after each review
+        document.add_page_break()
+    
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response['Content-Disposition'] = f'attachment; filename=Program_{program.program_code}_{academic_year}_Review.docx'
     document.save(response)
 
     return response

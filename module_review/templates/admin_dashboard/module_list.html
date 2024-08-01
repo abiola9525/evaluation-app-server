@@ -85,19 +85,27 @@
         .status-icon-red {
             background-color: #dc3545;
         }
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .filter-buttons .btn {
+            margin: 0 5px;
+        }
     </style>
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <a class="navbar-brand" href="{% url 'home' %}">Admin Dashboard</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'admin_module_list' %}">Modules</a>
@@ -106,10 +114,10 @@
                     <a class="nav-link" href="{% url 'admin_program_list' %}">Programs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'admin_module_create' %}">Create Module</a>
+                    <a class="nav-link" href="{% url 'add_module' %}">Create Module</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'admin_program_create' %}">Create Programs</a>
+                    <a class="nav-link" href="{% url 'add_program' %}">Create Programs</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'admin_academicyear_list' %}">Academic Year</a>
@@ -129,10 +137,10 @@
                 <div class="form-group">
                     <input type="text" id="search-input" class="form-control" placeholder="Search by Module Code or Name">
                 </div>
-                <div class="form-group">
-                    <button id="filter-all" class="btn btn--blue btn--radius-2">All</button>
-                    <button id="filter-completed" class="btn btn--blue btn--radius-2">Completed</button>
-                    <button id="filter-not-completed" class="btn btn--blue btn--radius-2">Not Completed</button>
+                <div class="filter-buttons">
+                    <button id="filter-all" class="btn btn-primary">All</button>
+                    <button id="filter-completed" class="btn btn-success">Completed</button>
+                    <button id="filter-not-completed" class="btn btn-danger">Not Completed</button>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-striped" id="module-table">
@@ -149,7 +157,7 @@
                             {% for module in modules %}
                             <tr>
                                 <td><a href="{% url 'admin_module_detail' module.id %}">{{ module.module_code }}</a></td>
-                                <td>{{ module.module_name }}</td>
+                                <td>{{ module.module_name }} ({{ module.academic_year }})</td>
                                 <td>{{ module.module_leader }}</td>
                                 <td>{% if module.module_review.exists %}
                                     {% if module.module_review.first.completed %}
@@ -199,18 +207,18 @@
         });
 
         document.getElementById('filter-all').addEventListener('click', function() {
-            fetchModules('all');
+            filterModules('all');
         });
 
         document.getElementById('filter-completed').addEventListener('click', function() {
-            fetchModules('completed');
+            filterModules('completed');
         });
 
         document.getElementById('filter-not-completed').addEventListener('click', function() {
-            fetchModules('not_completed');
+            filterModules('not_completed');
         });
 
-        function fetchModules(status) {
+        function filterModules(status) {
             fetch(`/api/admin/filter_modules/?status=${status}`)
                 .then(response => response.json())
                 .then(data => {
