@@ -651,3 +651,44 @@ def export_ay_program_details(request, program_id, academic_year):
     document.save(response)
 
     return response
+
+@api_view(['GET'])
+def previous_year_module_reviews(request, module_code):
+    module = get_object_or_404(Module, module_code=module_code)
+    
+    # Get the latest academic year
+    latest_academic_year = AcademicYear.objects.order_by('-academic_year').first()
+    
+    # Get the previous academic year
+    previous_academic_year = AcademicYear.objects.filter(academic_year__lt=latest_academic_year.academic_year).order_by('-academic_year').first()
+    
+    # Get the review for the previous academic year
+    review = ModuleReview.objects.filter(module=module, academic_year=previous_academic_year).first()
+    
+    if review:
+        review_data = {
+            'academic_year': review.academic_year.academic_year,
+            'school': review.school,
+            'student_nap': review.student_nap,
+            'evolution_of_op_module': review.evolution_of_op_module,
+            'evolution_to_teaching': review.evolution_to_teaching,
+            'inclusive_nature_of_curriculum': review.inclusive_nature_of_curriculum,
+            'past_changes': review.past_changes,
+            'future_changes': review.future_changes,
+            'other_comment': review.other_comment,
+            'completed_by': review.completed_by,
+            'completion_date': review.completion_date.strftime('%Y-%m-%d') if review.completion_date else None,
+        }
+    else:
+        review_data = None
+
+    module_data = {
+        'module_code': module.module_code,
+        'module_name': module.module_name,
+        'module_leader': module.module_leader,
+    }
+
+    return JsonResponse({
+        'module': module_data,
+        'review': review_data
+    })

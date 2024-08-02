@@ -5,6 +5,7 @@ from module_review import admin_view as vs
 urlpatterns = [
     path('login/', vs.custom_login, name='login'),
     path('academic-years/', views.academic_year_list, name='academic-year-list'),
+    path('/module/<str:module_code>/previous-review/', views.previous_year_module_reviews, name='previous_reviews'),
     
     path('module/', views.module_list, name='module'),
     path('module-detail/', views.module_detail, name='module-details'),
