@@ -41,7 +41,7 @@ class User(AbstractUser):
     first_name = models.CharField(max_length = 150)
     last_name = models.CharField(max_length = 150)
     gender = models.CharField(max_length = 50)
-    confirmation_code = models.CharField(max_length=8, blank=True, null=True)
+    
     is_user = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

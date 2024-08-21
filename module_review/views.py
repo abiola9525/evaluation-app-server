@@ -34,12 +34,27 @@ from django.views.decorators.http import require_GET
 # from django.contrib.auth.decorators import user_passes_test
 
 
-
+'''
 @api_view(['GET'])
 def academic_year_list(request):
     academic_years = AcademicYear.objects.all()
     serializer = AcademicYearSerializer(academic_years, many=True)
     return Response(serializer.data)
+'''
+
+@api_view(['GET'])
+def academic_year_list(request):
+    academic_years = AcademicYear.objects.all()
+    serialized_data = [
+        {
+            'id': academic_year.id,
+            'academic_year': academic_year.academic_year,
+            'status_message': "(Academic year is not accepting reviews)" if not academic_year.eval_accepting else ""
+        }
+        for academic_year in academic_years
+    ]
+    return Response(serialized_data)
+
 
 
 @swagger_auto_schema(method='POST', request_body=ModuleSerializer)
